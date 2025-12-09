@@ -8,11 +8,11 @@ axios.defaults.params = {
   orientation: "landscape",
 };
 
-interface PixelResponse {
+interface PixelResponse{
   photos: Photo[];
 }
 
-export const getPhotos = async (query: string): Promise<Photo[]> => {
+export const getPhotos = async (query:string): Promise<Photo[]> => {
   const response = await axios.get<PixelResponse>(`search?query=${query}`);
 
   return response.data.photos;

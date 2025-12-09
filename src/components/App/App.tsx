@@ -5,44 +5,66 @@ import toast, { Toaster } from "react-hot-toast";
 import { useState } from "react";
 import type { Photo } from "../../types/photo";
 import { getPhotos } from "../../services/photos";
+import Loader from "../Loader/Loader";
+import Text from "../Text/Text";
+import PhotosGallery from "../PhotosGallery/PhotosGallery";
+import Modal from "../Modal/Modal";
 
 export default function App() {
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isError, setIsError] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   const handleSubmit = async (newQuery: string) => {
     try {
-      setIsLoading(true);
-      setIsError(false);
+      setLoading(true);
+      setError(false);
       setPhotos([]);
       const data = await getPhotos(newQuery);
       if (data.length === 0) {
-        toast.error("oops");
+        toast.error("Oops, can't find");
         return;
       }
       setPhotos(data);
-
-      console.log("data:", data);
+      console.log("data", data);
+      
     } catch {
-      setIsError(true);
+      setError(true)
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-
     // console.log("newQuery:", newQuery);
+    console.log("photos", photos);
+    
   };
-  console.log("photos:", photos);
+
+  const handleSelectPhoto = (photo: Photo | null) => {
+    setSelectedPhoto(photo);
+  }
 
   return (
     <>
       <Section>
         <Container>
           <Form onSubmit={handleSubmit} />
+          {loading && <Loader />}
+          {error && <Text textAlign="center">Oops, sorry</Text>} 
+          {photos.length > 0 && <PhotosGallery photos={photos} onSelect={handleSelectPhoto} />}
+          {selectedPhoto && <Modal onClose={() => setSelectedPhoto(null)}>
+          <div
+        style={{
+          backgroundColor: selectedPhoto.avg_color,
+          borderColor: selectedPhoto.avg_color,
+        }}
+      >
+        <img src={selectedPhoto.src.large} alt={selectedPhoto.alt} />
+      </div>
+          </Modal>}       
+          
         </Container>
       </Section>
-
-      <Toaster />
+      <Toaster/>
     </>
   );
 }
